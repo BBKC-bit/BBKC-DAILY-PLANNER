@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<meta name="description" content="BBKC Daily Planner — plan your day, one task at a time.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<title>BBKC Daily Planner</title>
+<style>
+:root{--bg:#0b1220;--panel:#131e30;--panel2:#1a2940;--line:#2b3b55;--text:#edf3fb;--muted:#9aabc2;--accent:#79d7c4;--gold:#f2c879;--red:#f08c8c}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#101c30,#080e18 60%);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:22px 18px 14px;position:sticky;top:0;background:#0d1726ed;backdrop-filter:blur(12px);z-index:5;border-bottom:1px solid var(--line)}
+.brand{font-size:12px;letter-spacing:3px;color:var(--accent);font-weight:800}.headrow{display:flex;justify-content:space-between;align-items:center;gap:10px}.headrow h1{font-size:23px;margin:5px 0 0}.datebar{display:flex;align-items:center;gap:8px;margin-top:15px}.datebar input{flex:1;min-width:0}
+nav{display:flex;gap:7px;overflow:auto;padding:12px 14px;background:#0c1523;position:sticky;top:120px;z-index:4;border-bottom:1px solid var(--line)}
+nav button{white-space:nowrap;padding:9px 13px;border-radius:20px;background:transparent;color:var(--muted);border:1px solid var(--line)}
+nav button.active{background:var(--accent);color:#09201d;border-color:var(--accent);font-weight:800}
+main{max-width:760px;margin:auto;padding:16px 14px 100px}.view{display:none}.view.active{display:block}
+.card{background:linear-gradient(145deg,var(--panel),#101a2a);border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0;box-shadow:0 8px 24px #0002}
+h2{font-size:18px;margin:0 0 10px}h3{font-size:15px;margin:0 0 9px;color:var(--accent)}
+p,.muted{color:var(--muted);line-height:1.5}.small{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+button,.btn{border:0;border-radius:11px;padding:11px 13px;background:var(--accent);color:#09201d;font-weight:750;font-size:14px;cursor:pointer}
+button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}button.danger{background:#4b242c;color:#ffdce0;border:1px solid #75414a}
+input,textarea,select{width:100%;background:#0b1422;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;min-width:0}
+textarea{min-height:74px;resize:vertical}label{display:block;color:var(--muted);font-size:12px;margin:9px 0 5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.task{border:1px solid var(--line);background:#0e1928;border-radius:13px;padding:12px;margin:9px 0}
+.tasktop{display:flex;gap:10px;align-items:flex-start}.task input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);margin-top:2px}.task.done{opacity:.62}.task.done .taskname{text-decoration:line-through}.taskname{font-weight:750}.taskmeta{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}.taskactions{margin-left:auto;display:flex;gap:5px}.taskactions button{padding:6px 8px;font-size:11px}
+.pill{border:1px solid var(--line);border-radius:30px;padding:5px 9px;color:var(--muted);font-size:11px}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0c1725;border:1px solid var(--line);border-radius:13px;padding:12px}.stat b{font-size:21px;display:block;color:var(--accent)}.stat span{font-size:11px;color:var(--muted)}
+.segment{margin-top:16px}.segmenthead{display:flex;justify-content:space-between;align-items:center}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.timer{font-size:48px;font-weight:800;letter-spacing:2px;text-align:center;margin:14px}
+.daycell{padding:9px 0;text-align:center;border-radius:9px;background:#111e30;border:1px solid var(--line);font-size:12px}.daycell.done{background:#16483f;border-color:#327d70}.daycell.missed{background:#48232b;border-color:#8a4853}.daycell.today{outline:2px solid var(--gold)}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#eaf8f5;color:#10231f;padding:11px 16px;border-radius:12px;display:none;z-index:20;box-shadow:0 8px 25px #0006;max-width:90vw}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}.headrow h1{font-size:20px}.statgrid{grid-template-columns:repeat(3,1fr)}.stat{padding:9px}.stat b{font-size:18px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="headrow"><div><div class="brand">BBKC • PERSONAL OPERATING SYSTEM</div><h1>Daily Planner</h1></div><span class="pill">RELEASE 1</span></div>
+ <div class="datebar"><button class="secondary" id="prevDay">‹</button><input type="date" id="dayPicker"><button class="secondary" id="nextDay">›</button><button class="secondary" id="todayBtn">Today</button></div>
+</header>
+<nav id="tabs">
+ <button class="active" data-view="plan">My Day</button><button data-view="journal">Gratitude</button><button data-view="focus">Focus</button><button data-view="week">Week</button><button data-view="review">Review</button><button data-view="history">History</button><button data-view="settings">Settings</button>
+</nav>
+<main>
+<section class="view active" id="plan">
+ <div class="statgrid">
+  <div class="stat"><b id="doneCount">0/0</b><span>Tasks done</span></div><div class="stat"><b id="completion">0%</b><span>Completion</span></div><div class="stat"><b id="streak">0</b><span>Day streak</span></div>
+ </div>
+ <div class="card"><div class="row between"><div><h2 id="greeting">Today's briefing</h2><div class="small" id="briefDate"></div></div><span class="pill">JARVIS-STYLE BRIEF</span></div><p id="briefText">Your schedule will appear here. Add tasks to begin.</p></div>
+ <div id="segments"></div>
+ <div class="card"><h2>Quick add task</h2><form id="taskForm">
+  <label>Segment</label><select id="taskSegment"><option>Morning Routine</option><option>Studying Routine</option><option>Entertainment</option><option>Night Routine</option></select>
+  <label>WHAT — Task</label><input id="what" required maxlength="100" placeholder="e.g. Revise Biology chapter 2">
+  <div class="grid2"><div><label>WHEN — Time</label><input id="when" placeholder="e.g. 6:30–7:15 PM"></div><div><label>WHERE — Place</label><input id="where" placeholder="e.g. Study desk"></div></div>
+  <label>HOW — Method / instructions</label><textarea id="how" placeholder="What steps should you follow?"></textarea>
+  <div class="row" style="margin-top:10px"><button type="submit">＋ Add task</button><button type="button" class="secondary" id="clearForm">Clear</button></div>
+ </form></div>
+</section>
+<section class="view" id="journal">
+ <div class="card"><h2>Daily gratitude</h2><p>Write exactly three things, people, or experiences you appreciated today.</p>
+ <div id="gratitudeFields"></div><button id="saveGratitude">Save today's entries</button><p class="small" id="gratitudeStatus"></p></div>
+</section>
+<section class="view" id="focus">
+ <div class="card"><h2>Focus mode</h2><p>Choose a task, set a focus duration, and give it your attention.</p><label>Current task</label><select id="focusTask"><option value="">Choose a task</option></select><label>Focus duration (minutes)</label><input type="number" id="focusMinutes" min="1" max="180" value="25"><div class="timer" id="timerDisplay">25:00</div><div class="row" style="justify-content:center"><button id="startTimer">Start</button><button class="secondary" id="pauseTimer">Pause</button><button class="secondary" id="resetTimer">Reset</button></div><p class="small" id="timerStatus">Focus sessions run while this page is open.</p></div>
+</section>
+<section class="view" id="week">
+ <div class="card"><h2>Weekly planning</h2><p>Capture schoolwork, exams, assignments, and personal priorities for the week.</p><label>Week starting</label><input type="date" id="weekStart"><label>Weekly plan</label><textarea id="weeklyText" rows="8" placeholder="• Monday — ...&#10;• Tuesday — ..."></textarea><button id="saveWeek">Save weekly plan</button></div>
+</section>
+<section class="view" id="review">
+ <div class="card"><h2>End-of-day review</h2><p>Review the selected date. Your checked tasks are already recorded.</p><div class="statgrid"><div class="stat"><b id="reviewDone">0</b><span>Completed</span></div><div class="stat"><b id="reviewMissed">0</b><span>Missed</span></div><div class="stat"><b id="reviewOpen">0</b><span>Still open</span></div></div><label>What went well?</label><textarea id="wentWell"></textarea><label>What needs improvement?</label><textarea id="improve"></textarea><label>What should move to tomorrow?</label><textarea id="tomorrow"></textarea><button id="saveReview">Save review</button></div>
+</section>
+<section class="view" id="history">
+ <div class="card"><h2>History calendar</h2><p>Green = all tasks completed; red = at least one task missed; outline = selected day. Earlier dates without tasks are not automatically treated as missed.</p><div class="row between"><button class="secondary" id="historyPrev">‹</button><b id="monthLabel"></b><button class="secondary" id="historyNext">›</button></div><div id="calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px"></div></div>
+ <div class="card"><h2>Selected day record</h2><div id="historyDetails" class="muted">Choose a date above.</div></div>
+</section>
+<section class="view" id="settings">
+ <div class="card"><h2>Preferences</h2><label>Your name (optional)</label><input id="userName" placeholder="Planner owner"><label>Morning routine starter note</label><textarea id="morningNote" placeholder="Your fixed morning routine instructions"></textarea><label>Night routine starter note</label><textarea id="nightNote" placeholder="Your fixed night routine instructions"></textarea><button id="saveSettings">Save preferences</button></div>
+ <div class="card"><h2>Reminders</h2><p>Allow notifications to receive reminders while the browser supports them. Browser/phone battery settings may delay reminders, and this version cannot guarantee alarms while fully closed.</p><button id="enableNotifications">Enable notifications</button><label>Reminder time</label><input type="time" id="reminderTime" value="20:30"><button class="secondary" id="saveReminder">Save reminder preference</button><p class="small" id="notificationStatus"></p></div>
+ <div class="card"><h2>Your data</h2><p>Planner data is saved in this browser on this device. Clearing Chrome site data can erase it. Export a backup regularly.</p><div class="row"><button id="exportData">Export backup</button><label class="btn secondary" for="importFile">Import backup</label><input type="file" id="importFile" accept="application/json" hidden></div><button class="danger" id="clearData" style="margin-top:12px">Erase all planner data</button></div>
+ <div class="card"><h2>About</h2><p>BBKC Daily Planner Release 1. This is a browser-based planner, not an APK. It does not include live JARVIS AI, automatic Instagram/Chess.com monitoring, or a floating overlay.</p></div>
+</section>
+</main>
+<footer>PLAN • EXECUTE • REVIEW<br>BBKC</footer><div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id), today=()=>dateKey(new Date()), dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`, parseDate=s=>{let [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}, shift=(s,n)=>{let d=parseDate(s);d.setDate(d.getDate()+n);return dateKey(d)};
+const SEGMENTS=['Morning Routine','Studying Routine','Entertainment','Night Routine'];
+const blankDay=()=>({tasks:[],gratitude:['','',''],review:{wentWell:'',improve:'',tomorrow:''},closed:false});
+let db=load(), selected=today(), histMonth=parseDate(today()), timer=null, remaining=1500, running=false;
+function load(){try{return JSON.parse(localStorage.getItem('bbkcPlannerV1'))||{days:{},weeks:{},settings:{}}}catch(e){return {days:{},weeks:{},settings:{}}}}
+function save(){localStorage.setItem('bbkcPlannerV1',JSON.stringify(db))}
+function day(k=selected){if(!db.days[k])db.days[k]=blankDay();return db.days[k]}
+function toast(msg){$('toast').textContent=msg;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2200)}
+function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function processMissed(){let keys=Object.keys(db.days).sort();for(let k of keys){if(k<today()){let d=db.days[k];if(d.tasks.length&&!d.closed){d.tasks.forEach(t=>{if(!t.done)t.missed=true});d.closed=true}}}save()}
+function streakCount(){let n=0,k=today();while(db.days[k]&&db.days[k].tasks.length&&db.days[k].tasks.every(t=>t.done)){n++;k=shift(k,-1)}return n}
+function render(){processMissed();$('dayPicker').value=selected;let d=day(),tasks=d.tasks,done=tasks.filter(t=>t.done).length,missed=tasks.filter(t=>t.missed).length;$('doneCount').textContent=`${done}/${tasks.length}`;$('completion').textContent=(tasks.length?Math.round(done/tasks.length*100):0)+'%';$('streak').textContent=streakCount();$('briefDate').textContent=parseDate(selected).toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('greeting').textContent=(selected===today()?'Today’s briefing':'Daily briefing');$('briefText').textContent=tasks.length?`${tasks.length} tasks planned • ${done} completed • ${missed} missed. ${tasks.filter(t=>!t.done&&!t.missed).length} still open.`:'Your schedule is clear. Add tasks below to build your day.';
+$('segments').innerHTML=SEGMENTS.map(seg=>{let arr=tasks.filter(t=>t.segment===seg);return `<div class="segment"><div class="segmenthead"><h3>${seg}</h3><span class="pill">${arr.filter(t=>t.done).length}/${arr.length} done</span></div>${arr.length?arr.map(t=>`<div class="task ${t.done?'done':''}"><div class="tasktop"><input type="checkbox" data-check="${t.id}" ${t.done?'checked':''} ${t.missed?'disabled':''}><div style="flex:1"><div class="taskname">${escapeHtml(t.what)} ${t.missed?'<span class="pill">MISSED</span>':''}</div><div class="taskmeta">${t.when?'⏰ '+escapeHtml(t.when)+' · ':''}${t.where?'⌖ '+escapeHtml(t.where):''}${t.how?'<br>HOW: '+escapeHtml(t.how):''}</div></div><div class="taskactions"><button class="secondary" data-edit="${t.id}">Edit</button><button class="danger" data-delete="${t.id}">×</button></div></div></div>`).join(''):'<div class="empty">No tasks in this segment yet.</div>'}</div>`}).join('');
+$('gratitudeFields').innerHTML=[0,1,2].map(i=>`<label>${['1. Something I appreciated','2. Someone I am grateful for','3. A moment that made me happy'][i]}</label><textarea data-grat="${i}" maxlength="500" placeholder="Write your entry...">${escapeHtml(d.gratitude[i]||'')}</textarea>`).join('');
+$('reviewDone').textContent=done;$('reviewMissed').textContent=missed;$('reviewOpen').textContent=tasks.filter(t=>!t.done&&!t.missed).length;$('wentWell').value=d.review.wentWell||'';$('improve').value=d.review.improve||'';$('tomorrow').value=d.review.tomorrow||'';
+let opts=tasks.map(t=>`<option value="${t.id}">${escapeHtml(t.what)}</option>`).join('');$('focusTask').innerHTML='<option value="">Choose a task</option>'+opts;
+renderCalendar();renderHistoryDetails();loadSettings()}
+function addTask(t){let d=day();d.tasks.push({...t,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),done:false,missed:false});save();render();toast('Task added')}
+$('taskForm').addEventListener('submit',e=>{e.preventDefault();addTask({segment:$('taskSegment').value,what:$('what').value.trim(),when:$('when').value.trim(),where:$('where').value.trim(),how:$('how').value.trim()});e.target.reset()});
+$('clearForm').onclick=()=>$('taskForm').reset();
+$('segments').addEventListener('change',e=>{if(e.target.matches('[data-check]')){let t=day().tasks.find(x=>x.id===e.target.dataset.check);if(t){t.done=e.target.checked;t.missed=false;save();render()}}});
+$('segments').addEventListener('click',e=>{let id=e.target.dataset.delete||e.target.dataset.edit;if(!id)return;let t=day().tasks.find(x=>x.id===id);if(e.target.dataset.delete){if(confirm('Delete this task?')){day().tasks=day().tasks.filter(x=>x.id!==id);save();render()}}else if(t){let what=prompt('WHAT — task',t.what);if(what===null)return;let when=prompt('WHEN — timing',t.when)||'',where=prompt('WHERE — place',t.where)||'',how=prompt('HOW — method',t.how)||'';Object.assign(t,{what:what.trim(),when,where,how});save();render()}});
+$('saveGratitude').onclick=()=>{document.querySelectorAll('[data-grat]').forEach(x=>day().gratitude[+x.dataset.grat]=x.value.trim());save();$('gratitudeStatus').textContent='Saved for '+selected;toast('Gratitude saved')};
+$('dayPicker').value=selected;$('dayPicker').onchange=e=>{selected=e.target.value||today();render()};$('prevDay').onclick=()=>{selected=shift(selected,-1);render()};$('nextDay').onclick=()=>{selected=shift(selected,1);render()};$('todayBtn').onclick=()=>{selected=today();render()};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===b.dataset.view));if(b.dataset.view==='history')renderCalendar()});
+function renderCalendar(){let y=histMonth.getFullYear(),m=histMonth.getMonth();$('monthLabel').textContent=histMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'});let first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),out=['M','T','W','T','F','S','S'].map(x=>`<div class="daycell" style="background:transparent;border:0;color:var(--muted)">${x}</div>`).join('');for(let i=0;i<offset;i++)out+='<div></div>';for(let n=1;n<=days;n++){let k=dateKey(new Date(y,m,n)),d=db.days[k],cls='daycell';if(d&&d.tasks.length){if(d.tasks.every(t=>t.done))cls+=' done';else if(d.closed||d.tasks.some(t=>t.missed))cls+=' missed'}if(k===selected)cls+=' today';out+=`<button class="${cls}" data-date="${k}" style="color:var(--text);padding:9px 0">${n}</button>`}$('calendar').innerHTML=out}
+$('calendar').onclick=e=>{let k=e.target.dataset.date;if(k){selected=k;render()}};$('historyPrev').onclick=()=>{histMonth.setMonth(histMonth.getMonth()-1);renderCalendar()};$('historyNext').onclick=()=>{histMonth.setMonth(histMonth.getMonth()+1);renderCalendar()};
+function renderHistoryDetails(){let d=db.days[selected];$('historyDetails').innerHTML=d?`<b>${d.tasks.length} tasks</b><br>${d.tasks.map(t=>`${t.done?'✓':t.missed?'✕':'○'} ${escapeHtml(t.what)}`).join('<br>')||'No tasks saved.'}`:'No saved record for this date.'}
+$('saveReview').onclick=()=>{Object.assign(day().review,{wentWell:$('wentWell').value,improve:$('improve').value,tomorrow:$('tomorrow').value});save();toast('Review saved')};
+function mondayKey(s){let d=parseDate(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return dateKey(d)}
+function loadWeek(){let k=mondayKey(selected);$('weekStart').value=k;$('weeklyText').value=db.weeks[k]||''}
+$('weekStart').onchange=()=>{$('weeklyText').value=db.weeks[$('weekStart').value]||''};$('saveWeek').onclick=()=>{db.weeks[$('weekStart').value||mondayKey(selected)]=$('weeklyText').value;save();toast('Weekly plan saved')};
+function loadSettings(){let s=db.settings;$('userName').value=s.name||'';$('morningNote').value=s.morning||'';$('nightNote').value=s.night||'';$('reminderTime').value=s.reminder||'20:30'}
+$('saveSettings').onclick=()=>{Object.assign(db.settings,{name:$('userName').value,morning:$('morningNote').value,night:$('nightNote').value});save();toast('Preferences saved')};
+$('enableNotifications').onclick=async()=>{if(!('Notification'in window)){$('notificationStatus').textContent='Notifications are not supported by this browser.';return}let p=await Notification.requestPermission();$('notificationStatus').textContent='Notification permission: '+p};
+$('saveReminder').onclick=()=>{db.settings.reminder=$('reminderTime').value;save();toast('Reminder preference saved');$('notificationStatus').textContent='Saved. Reminder delivery depends on browser support and whether the app is allowed to run.'};
+$('exportData').onclick=()=>{let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='BBKC-planner-backup-'+today()+'.json';a.click();URL.revokeObjectURL(a.href)};
+$('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let x=JSON.parse(await f.text());if(!x.days||!x.settings)throw 0;if(confirm('Replace current planner data with this backup?')){db=x;save();render();toast('Backup imported')}}catch(err){alert('That backup file is not valid.')}e.target.value=''};
+$('clearData').onclick=()=>{if(confirm('Permanently erase all BBKC planner data from this browser? Export a backup first if needed.')){localStorage.removeItem('bbkcPlannerV1');db=load();selected=today();render();toast('Planner data erased')}};
+function showView(v){document.querySelector(`nav button[data-view="${v}"]`).click()}
+function updateTimer(){let mm=Math.floor(remaining/60),ss=remaining%60;$('timerDisplay').textContent=String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0')}
+$('focusMinutes').onchange=()=>{if(!running){remaining=Math.max(1,Math.min(180,+$('focusMinutes').value||25))*60;updateTimer()}};
+$('startTimer').onclick=()=>{if(running)return;let task=$('focusTask').selectedOptions[0]?.textContent||'your focus session';running=true;$('timerStatus').textContent='Focusing on: '+task;timer=setInterval(()=>{remaining--;updateTimer();if(remaining<=0){clearInterval(timer);running=false;$('timerStatus').textContent='Session complete. Take a short break.';if('Notification'in window&&Notification.permission==='granted')new Notification('BBKC Focus',{body:'Your focus session is complete.'});toast('Focus session complete!')}},1000)};
+$('pauseTimer').onclick=()=>{clearInterval(timer);running=false;$('timerStatus').textContent='Paused.'};$('resetTimer').onclick=()=>{clearInterval(timer);running=false;remaining=(Math.max(1,Math.min(180,+$('focusMinutes').value||25))*60);updateTimer();$('timerStatus').textContent='Ready when you are.'};
+processMissed();loadWeek();render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
